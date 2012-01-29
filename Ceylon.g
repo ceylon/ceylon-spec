@@ -3210,7 +3210,12 @@ COMPILER_ANNOTATION
     ;
 
 fragment
-LIDENTIFIER :;
+LIDENTIFIER
+    :   LIdentifierPrefix name=IdentifierPart+
+        {$text = $name; /* FIXME this is unlikely to work */ }
+    // also see UIDENTIFIER    
+    ;
+
 fragment
 PIDENTIFIER :;
 fragment
@@ -3220,6 +3225,8 @@ UIDENTIFIER
     :   IdentifierStart IdentifierPart*
         { int cp = $text.codePointAt(0);
           if (cp=='_' || Character.isLowerCase(cp)) $type=LIDENTIFIER; }
+    |   UIdentifierPrefix name=IdentifierPart+
+        { $text = $name; /* FIXME this is unlikely to work */ }
     ;
 
 fragment
@@ -3230,7 +3237,17 @@ IdentifierStart
           //TODO: error!
         } }
     ;       
-             
+
+fragment
+LIdentifierPrefix
+    : '$'
+    ;
+
+fragment
+UIdentifierPrefix
+    : '$$'
+    ;
+    
 fragment 
 IdentifierPart
     :   '_'
