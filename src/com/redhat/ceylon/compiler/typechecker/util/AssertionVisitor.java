@@ -65,7 +65,6 @@ public class AssertionVisitor extends Visitor implements NaturalVisitor {
         boolean b = expectingError;
         List<Message> f = foundErrors;
         expectingError = false;
-        foundErrors = new ArrayList<Message>();
         initExpectingError(that.getCompilerAnnotations());
         super.visit(that);
         checkErrors(that);
@@ -76,11 +75,9 @@ public class AssertionVisitor extends Visitor implements NaturalVisitor {
     @Override
     public void visit(Tree.CompilationUnit that) {
     	expectingError = false;
-        foundErrors = new ArrayList<Message>();
     	initExpectingError(that.getCompilerAnnotations());
         foundErrors.addAll(that.getErrors());
         checkErrors(that);
-        foundErrors = new ArrayList<Message>();
     	expectingError = false;
     	super.visitAny(that);
     }
@@ -157,13 +154,14 @@ public class AssertionVisitor extends Visitor implements NaturalVisitor {
     }
 
     private void checkErrors(Node that) {
-    	for (Message err: foundErrors) {
+        final List<Message> errs = that.getErrors();
+    	for (Message err: errs) {
             if (err instanceof UnexpectedError) {
                 out( (UnexpectedError) err );
             }
     	}
     	if (expectingError) {
-            for (Message err: foundErrors) {
+            for (Message err: errs) {
                 if (err instanceof AnalysisError ||
                 		err instanceof LexError ||
                 		err instanceof ParseError) {
@@ -173,7 +171,7 @@ public class AssertionVisitor extends Visitor implements NaturalVisitor {
             out(that, "no error encountered");
         }
         else {
-            for (Message err: foundErrors) {
+            for (Message err: errs) {
                 if (err instanceof LexError) {
                     out( that, (LexError) err );
                 }
