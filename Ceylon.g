@@ -3240,12 +3240,12 @@ IdentifierStart
 
 fragment
 LIdentifierPrefix
-    : '$'
+    : '\\i'
     ;
 
 fragment
 UIdentifierPrefix
-    : '$$'
+    : '\\I'
     ;
     
 fragment 
