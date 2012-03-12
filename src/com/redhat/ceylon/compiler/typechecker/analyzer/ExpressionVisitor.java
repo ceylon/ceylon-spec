@@ -2579,7 +2579,7 @@ public class ExpressionVisitor extends Visitor {
                 that.setTypeModel(t);
                 if (!withinAnnotation && term instanceof Tree.MemberOrTypeExpression &&
                         ((Tree.MemberOrTypeExpression) term).getDeclaration() instanceof Functional) {
-                    that.addWarning("callable references (first-class functions) not yet supported");
+                    //that.addWarning("callable references (first-class functions) not yet supported");
                 }
             }
         }
