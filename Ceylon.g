@@ -3221,6 +3221,10 @@ UIDENTIFIER
     :   IdentifierStart IdentifierPart*
         { int cp = $text.codePointAt(0);
           if (cp=='_' || Character.isLowerCase(cp)) $type=LIDENTIFIER; }
+    |   UIdentifierPrefix name=IdentifierPart+
+        { setText($text.substring(2)); }
+    |   LIdentifierPrefix name=IdentifierPart+
+        { setText($text.substring(2)); $type=LIDENTIFIER; }
     ;
 
 fragment
@@ -3231,7 +3235,17 @@ IdentifierStart
           //TODO: error!
         } }
     ;       
-             
+
+fragment
+LIdentifierPrefix
+    : '\\i'
+    ;
+
+fragment
+UIdentifierPrefix
+    : '\\I'
+    ;
+    
 fragment 
 IdentifierPart
     :   '_'
