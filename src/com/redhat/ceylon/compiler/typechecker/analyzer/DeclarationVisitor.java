@@ -272,9 +272,9 @@ public class DeclarationVisitor extends Visitor {
         Scope o = enterScope(i);
         super.visit(that);
         exitScope(o);
-        if (!i.isToplevel()) {
+        /*if (!i.isToplevel()) {
             that.addWarning("inner interfaces are not yet supported");
-        }
+        }*/
         /*if ( that.getCaseTypes()!=null ) {
             that.addWarning("interfaces with enumerated cases not yet supported");
         }*/
