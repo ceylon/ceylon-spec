@@ -17,11 +17,14 @@ import com.redhat.ceylon.compiler.typechecker.tree.UnexpectedError;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 public class AssertionVisitor extends Visitor implements NaturalVisitor {
-    
+
     private boolean expectingError = false;
     private List<Message> foundErrors = new ArrayList<Message>();
     private int errors = 0;
     private int warnings = 0;
+
+    //output warnings or not
+    private boolean includeWarnings = false;
 
     @Override
     public void visit(Tree.TypedDeclaration that) {
@@ -36,12 +39,12 @@ public class AssertionVisitor extends Visitor implements NaturalVisitor {
         checkType(that, that.getExpression().getTypeModel(), that.getExpression());
         super.visit(that);
     }
-    
+
     private void checkType(Tree.Statement that, ProducedType type, Node typedNode) {
         for (Tree.CompilerAnnotation c: that.getCompilerAnnotations()) {
             if (c.getIdentifier().getText().equals("type")) {
                 String expectedType = c.getStringLiteral().getText();
-                if (typedNode==null || type==null || 
+                if (typedNode==null || type==null ||
                         type.getDeclaration()==null) {
                     out(that, "type not known");
                 }
@@ -53,7 +56,7 @@ public class AssertionVisitor extends Visitor implements NaturalVisitor {
             }
         }
     }
-    
+
     @Override
     public void visit(Tree.StatementOrArgument that) {
         if (that instanceof Tree.Variable) {
@@ -72,7 +75,7 @@ public class AssertionVisitor extends Visitor implements NaturalVisitor {
         expectingError = b;
         foundErrors = f;
     }
-    
+
     @Override
     public void visit(Tree.CompilationUnit that) {
     	expectingError = false;
@@ -84,7 +87,7 @@ public class AssertionVisitor extends Visitor implements NaturalVisitor {
     	expectingError = false;
     	super.visitAny(that);
     }
-    
+
     @Override
     public void visit(Tree.Declaration that) {
         super.visit(that);
@@ -106,7 +109,7 @@ public class AssertionVisitor extends Visitor implements NaturalVisitor {
 
     protected void out(Node that, String message) {
         System.err.println(
-            message + " at " + 
+            message + " at " +
             that.getLocation() + " of " +
             that.getUnit().getFilename());
     }
@@ -115,8 +118,8 @@ public class AssertionVisitor extends Visitor implements NaturalVisitor {
         errors++;
         System.err.println(
             "lex error encountered [" +
-            err.getMessage() + "] at " + 
-            err.getHeader() + " of " + 
+            err.getMessage() + "] at " +
+            err.getHeader() + " of " +
             that.getUnit().getFilename());
     }
 
@@ -124,8 +127,8 @@ public class AssertionVisitor extends Visitor implements NaturalVisitor {
         errors++;
         System.err.println(
             "parse error encountered [" +
-            err.getMessage() + "] at " + 
-            err.getHeader() + " of " + 
+            err.getMessage() + "] at " +
+            err.getHeader() + " of " +
             that.getUnit().getFilename());
     }
 
@@ -133,7 +136,7 @@ public class AssertionVisitor extends Visitor implements NaturalVisitor {
         errors++;
         System.err.println(
             "unexpected error encountered [" +
-            err.getMessage() + "] at " + 
+            err.getMessage() + "] at " +
             err.getTreeNode().getLocation() + " of " +
             err.getTreeNode().getUnit().getFilename());
     }
@@ -142,7 +145,7 @@ public class AssertionVisitor extends Visitor implements NaturalVisitor {
         errors++;
         System.err.println(
             "error encountered [" +
-            err.getMessage() + "] at " + 
+            err.getMessage() + "] at " +
             err.getTreeNode().getLocation() + " of " +
             err.getTreeNode().getUnit().getFilename());
     }
@@ -151,7 +154,7 @@ public class AssertionVisitor extends Visitor implements NaturalVisitor {
         warnings++;
         System.out.println(
             "warning encountered [" +
-            err.getMessage() + "] at " + 
+            err.getMessage() + "] at " +
             err.getTreeNode().getLocation() + " of " +
             err.getTreeNode().getUnit().getFilename());
     }
@@ -184,14 +187,14 @@ public class AssertionVisitor extends Visitor implements NaturalVisitor {
                     out( (AnalysisError) err );
                 }
                 else if (err instanceof AnalysisWarning) {
-                    if (includeWarnings()) {
+                    if (includeWarnings) {
                         out( (AnalysisWarning) err );
                     }
                 }
             }
         }
     }
-    
+
     protected void initExpectingError(List<Tree.CompilerAnnotation> annotations) {
         for (Tree.CompilerAnnotation c: annotations) {
             if (c.getIdentifier().getText().equals("error")) {
@@ -199,17 +202,17 @@ public class AssertionVisitor extends Visitor implements NaturalVisitor {
             }
         }
     }
-    
-    protected boolean includeWarnings() {
-        return true;
+
+    public void includeWarnings(boolean includeWarnings) {
+        this.includeWarnings = includeWarnings;
     }
-    
+
     @Override
     public void visitAny(Node that) {
         foundErrors.addAll(that.getErrors());
         super.visitAny(that);
     }
-    
+
     public void print(boolean verbose) {
     	if(!verbose && errors == 0 && warnings == 0)
     		return;
@@ -227,5 +230,5 @@ public class AssertionVisitor extends Visitor implements NaturalVisitor {
 	public int getWarnings() {
 		return warnings;
 	}
-    
+
 }
