@@ -47,12 +47,12 @@ import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
  * we know is the name of the declaration and what
  * kind of declaration it is. The model objects do not
  * contain type information.
- * 
+ *
  * @author Gavin King
  *
  */
 public class DeclarationVisitor extends Visitor {
-    
+
     private final Package pkg;
     private final String filename;
     private Scope scope;
@@ -69,7 +69,7 @@ public class DeclarationVisitor extends Visitor {
     public Unit getCompilationUnit() {
         return unit;
     }
-    
+
     private Scope enterScope(Scope innerScope) {
         Scope outerScope = scope;
         scope = innerScope;
@@ -79,7 +79,7 @@ public class DeclarationVisitor extends Visitor {
     private void exitScope(Scope outerScope) {
         scope = outerScope;
     }
-    
+
     private Declaration beginDeclaration(Declaration innerDec) {
         Declaration outerDec = declaration;
         declaration = innerDec;
@@ -89,11 +89,11 @@ public class DeclarationVisitor extends Visitor {
     private void endDeclaration(Declaration outerDec) {
         declaration = outerDec;
     }
-    
+
     private void visitDeclaration(Tree.Declaration that, Declaration model) {
         visitDeclaration(that,  model, true);
     }
-    
+
     private void visitDeclaration(Tree.Declaration that, Declaration model, boolean checkDupe) {
         visitElement(that, model);
         if ( setModelName(that, model, that.getIdentifier()) ) {
@@ -105,7 +105,7 @@ public class DeclarationVisitor extends Visitor {
             scope.getMembers().add(model);
         }
 
-        handleDeclarationAnnotations(that, model);        
+        handleDeclarationAnnotations(that, model);
 
         setVisibleScope(model);
 
@@ -143,14 +143,14 @@ public class DeclarationVisitor extends Visitor {
     /*private String internalName(Node that, Declaration model,
             Tree.Identifier id) {
         String n = id.getText();
-        if ((that instanceof Tree.ObjectDefinition||that instanceof Tree.ObjectArgument) 
+        if ((that instanceof Tree.ObjectDefinition||that instanceof Tree.ObjectArgument)
                 && model instanceof Class) {
             n = "#" + n;
         }
         return n;
     }*/
 
-    private static void checkForDuplicateDeclaration(Tree.Declaration that, 
+    private static void checkForDuplicateDeclaration(Tree.Declaration that,
             final Declaration model) {
         if (model.getName()!=null) {
             if (model instanceof Setter) {
@@ -195,14 +195,14 @@ public class DeclarationVisitor extends Visitor {
         model.setUnit(unit);
         model.setContainer(scope);
     }
-    
+
     @Override
     public void visitAny(Node that) {
         that.setScope(scope);
         that.setUnit(unit);
         super.visitAny(that);
     }
-    
+
     @Override
     public void visit(Tree.CompilationUnit that) {
         unit = new Unit();
@@ -213,7 +213,7 @@ public class DeclarationVisitor extends Visitor {
         pkg.addUnit(unit);
         super.visit(that);
     }
-    
+
     @Override
     public void visit(Tree.ImportMemberOrTypeList that) {
         ImportList il = new ImportList();
@@ -224,13 +224,13 @@ public class DeclarationVisitor extends Visitor {
         super.visit(that);
         exitScope(o);
     }
-    
+
     @Override
     public void visit(Tree.TypeParameterList that) {
         super.visit(that);
         ((Generic) declaration).setTypeParameters(getTypeParameters(that));
-    }    
-    
+    }
+
     @Override
     public void visit(Tree.TypeDeclaration that) {
         super.visit(that);
@@ -243,7 +243,7 @@ public class DeclarationVisitor extends Visitor {
             }
         }
     }
-    
+
     @Override
     public void visit(Tree.AnyClass that) {
         Class c = that instanceof Tree.ClassDefinition ?
@@ -254,10 +254,10 @@ public class DeclarationVisitor extends Visitor {
         super.visit(that);
         exitScope(o);
         if (that.getParameterList()==null) {
-            that.addError("missing parameter list in class declaration: " + 
+            that.addError("missing parameter list in class declaration: " +
                     name(that.getIdentifier()), 1000 );
         }
-        if (c.isClassOrInterfaceMember() && 
+        if (c.isClassOrInterfaceMember() &&
                 c.getContainer() instanceof TypedDeclaration) {
             that.addWarning("nested classes of inner classes are not yet supported");
         }
@@ -282,7 +282,7 @@ public class DeclarationVisitor extends Visitor {
             that.addWarning("interfaces with enumerated cases not yet supported");
         }*/
     }
-    
+
     @Override
     public void visit(Tree.InterfaceDefinition that) {
         super.visit(that);
@@ -290,7 +290,7 @@ public class DeclarationVisitor extends Visitor {
             that.addWarning("introductions are not yet supported");
         }
     }
-    
+
     @Override
     public void visit(Tree.TypeParameterDeclaration that) {
         TypeParameter p = new TypeParameter();
@@ -304,7 +304,7 @@ public class DeclarationVisitor extends Visitor {
         visitDeclaration(that, p);
         super.visit(that);
     }
-    
+
     @Override
     public void visit(Tree.SequencedTypeParameterDeclaration that) {
         TypeParameter p = new TypeParameter();
@@ -314,7 +314,7 @@ public class DeclarationVisitor extends Visitor {
         visitDeclaration(that, p);
         super.visit(that);
     }
-    
+
     @Override
     public void visit(Tree.AnyMethod that) {
         Method m = new Method();
@@ -333,8 +333,21 @@ public class DeclarationVisitor extends Visitor {
                 that.addError("sequenced type parameters for methods not yet supported");
             }
         }
+
+        collectUsage(that, m.getUsages());
     }
-    
+
+    private void collectUsage(Node node, List<String> identifiers) {
+        List<Node> children = node.getChildren();
+        for (Node n : children) {
+            if (n instanceof Tree.Identifier) {
+                identifiers.add(n.getText());
+            } else {
+                collectUsage(n, identifiers);
+            }
+        }
+    }
+
     @Override
     public void visit(Tree.AnyAttribute that) {
         super.visit(that);
@@ -372,7 +385,7 @@ public class DeclarationVisitor extends Visitor {
 
     private static void checkMethodParameters(Tree.AnyMethod that) {
         if (that.getParameterLists().isEmpty()) {
-            that.addError("missing parameter list in method declaration: " + 
+            that.addError("missing parameter list in method declaration: " +
                     name(that.getIdentifier()), 1000 );
         }
         /*if ( that.getParameterLists().size()>1 ) {
@@ -391,7 +404,7 @@ public class DeclarationVisitor extends Visitor {
 
     private static void checkMethodArgumentParameters(Tree.MethodArgument that) {
         if (that.getParameterLists().isEmpty()) {
-            that.addError("missing parameter list in named argument declaration: " + 
+            that.addError("missing parameter list in named argument declaration: " +
                     name(that.getIdentifier()) );
         }
         /*if ( that.getParameterLists().size()>1 ) {
@@ -436,7 +449,7 @@ public class DeclarationVisitor extends Visitor {
         super.visit(that);
         exitScope(o);
     }
-    
+
     @Override
     public void visit(Tree.AttributeDeclaration that) {
         Value v = new Value();
@@ -495,7 +508,7 @@ public class DeclarationVisitor extends Visitor {
             }
         }
     }
-            
+
     @Override
     public void visit(Tree.MethodDefinition that) {
         super.visit(that);
@@ -509,7 +522,7 @@ public class DeclarationVisitor extends Visitor {
             }
         }
     }
-            
+
     @Override
     public void visit(Tree.AttributeGetterDefinition that) {
         Getter g = new Getter();
@@ -527,7 +540,7 @@ public class DeclarationVisitor extends Visitor {
             }
         }
     }
-    
+
     @Override
     public void visit(Tree.AttributeArgument that) {
         Getter g = new Getter();
@@ -537,7 +550,7 @@ public class DeclarationVisitor extends Visitor {
         super.visit(that);
         exitScope(o);
     }
-    
+
     @Override
     public void visit(Tree.AttributeSetterDefinition that) {
         Setter s = new Setter();
@@ -552,7 +565,7 @@ public class DeclarationVisitor extends Visitor {
         if (!(scope instanceof Package)) {
             scope.getMembers().add(p);
         }
-        
+
         s.setParameter(p);
         super.visit(that);
         exitScope(o);
@@ -573,11 +586,11 @@ public class DeclarationVisitor extends Visitor {
                 }
                 /*if (declaration instanceof Method &&
                     !declaration.isToplevel() &&
-                    !(declaration.isClassOrInterfaceMember() && 
+                    !(declaration.isClassOrInterfaceMember() &&
                             ((Declaration) declaration.getContainer()).isToplevel())) {
                     se.addWarning("default arguments for parameters of inner methods not yet supported");
                 }
-                if (declaration instanceof Class && 
+                if (declaration instanceof Class &&
                         !declaration.isToplevel()) {
                     se.addWarning("default arguments for parameters of inner classes not yet supported");
                 }*/
@@ -587,7 +600,7 @@ public class DeclarationVisitor extends Visitor {
             }
         }
     }
-    
+
     @Override
     public void visit(Tree.ValueParameterDeclaration that) {
         ValueParameter p = new ValueParameter();
@@ -629,7 +642,7 @@ public class DeclarationVisitor extends Visitor {
             f.addParameterList(parameterList);
         }
         parameterList = pl;
-        
+
         boolean foundSequenced = false;
         boolean foundDefault = false;
         for (Tree.Parameter p: that.getParameters()) {
@@ -660,9 +673,9 @@ public class DeclarationVisitor extends Visitor {
             }
         }
     }
-    
+
     private int id=0;
-    
+
     @Override
     public void visit(Tree.ControlClause that) {
         ControlBlock cb = new ControlBlock();
@@ -673,7 +686,7 @@ public class DeclarationVisitor extends Visitor {
         super.visit(that);
         exitScope(o);
     }
-    
+
     @Override
     public void visit(Tree.Body that) {
         int oid=id;
@@ -681,7 +694,7 @@ public class DeclarationVisitor extends Visitor {
         super.visit(that);
         id=oid;
     }
-    
+
     @Override
     public void visit(Tree.NamedArgumentList that) {
         NamedArgumentList nal = new NamedArgumentList();
@@ -696,7 +709,7 @@ public class DeclarationVisitor extends Visitor {
         super.visit(that);
         exitScope(o);
     }
-    
+
     @Override
     public void visit(Tree.Variable that) {
         if (that.getSpecifierExpression()!=null) {
@@ -732,7 +745,7 @@ public class DeclarationVisitor extends Visitor {
         that.setScope(scope);
         that.setUnit(unit);
     }
-    
+
     private static List<TypeParameter> getTypeParameters(Tree.TypeParameterList tpl) {
         List<TypeParameter> typeParameters = new ArrayList<TypeParameter>();
         if (tpl!=null) {
@@ -746,7 +759,7 @@ public class DeclarationVisitor extends Visitor {
         }
         return typeParameters;
     }
-    
+
     @Override public void visit(Tree.Declaration that) {
         Declaration model = that.getDeclarationModel();
         Declaration d = beginDeclaration(model);
@@ -820,8 +833,8 @@ public class DeclarationVisitor extends Visitor {
                 that.addError("declaration is not a value, and may not be annotated variable", 1500);
             }
         }
-        
-        buildAnnotations(al, model.getAnnotations());        
+
+        buildAnnotations(al, model.getAnnotations());
     }
 
     static void setVisibleScope(Declaration model) {
@@ -853,13 +866,13 @@ public class DeclarationVisitor extends Visitor {
             else {
                 model.setVisibleScope(s);
                 break;
-            }    
+            }
             s = s.getContainer();
         }
     }
 
     private static void checkFormalMember(Tree.Declaration that, Declaration d) {
-        
+
         if ( d.isFormal() ) {
             if ( !(d.getContainer() instanceof ClassOrInterface) ) {
                 that.addError("formal member does not belong to an interface or abstract class", 1100);
@@ -868,22 +881,22 @@ public class DeclarationVisitor extends Visitor {
                 that.addError("formal member belongs to a concrete class", 900);
             }
         }
-        
-        if ( d.isFormal() && 
-                !(that instanceof Tree.AttributeDeclaration) && 
+
+        if ( d.isFormal() &&
+                !(that instanceof Tree.AttributeDeclaration) &&
                 !(that instanceof Tree.MethodDeclaration) &&
                 !(that instanceof Tree.ClassDefinition)) {
             that.addError("formal member may not have a body", 1100);
         }
-        
-        /*if ( !d.isFormal() && 
-                d.getContainer() instanceof Interface && 
+
+        /*if ( !d.isFormal() &&
+                d.getContainer() instanceof Interface &&
                 !(that instanceof Tree.TypeParameterDeclaration) &&
                 !(that instanceof Tree.ClassDeclaration) &&
                 !(that instanceof Tree.InterfaceDeclaration)) {
             that.addWarning("concrete members of interfaces not yet supported");
         }*/
-        
+
     }
 
     private static void buildAnnotations(Tree.AnnotationList al, List<Annotation> annotations) {
@@ -906,7 +919,7 @@ public class DeclarationVisitor extends Visitor {
                                     ann.addNamedArgument( param, ( (Tree.BaseMemberOrTypeExpression) t ).getIdentifier().getText() );
                                 }
                             }
-                        }                    
+                        }
                     }
                 }
                 if (a.getPositionalArgumentList()!=null) {
@@ -924,7 +937,7 @@ public class DeclarationVisitor extends Visitor {
             }
         }
     }
-        
+
     @Override public void visit(Tree.TypedArgument that) {
         Declaration d = beginDeclaration(that.getDeclarationModel());
         super.visit(that);
@@ -937,14 +950,14 @@ public class DeclarationVisitor extends Visitor {
         TypeParameter p = (TypeParameter) scope.getMemberOrParameter(unit, name(that.getIdentifier()), null);
         that.setDeclarationModel(p);
         if (p==null) {
-            that.addError("no matching type parameter for constraint: " + 
+            that.addError("no matching type parameter for constraint: " +
                     name(that.getIdentifier()));
             p = new TypeParameter();
             p.setDeclaration(declaration);
             that.setDeclarationModel(p);
             visitDeclaration(that, p);
         }
-        
+
         Scope o = enterScope(p);
         super.visit(that);
         exitScope(o);
@@ -959,7 +972,7 @@ public class DeclarationVisitor extends Visitor {
             that.addWarning("parameter bounds are not yet supported");
         }
     }
-    
+
     @Override
     public void visit(Tree.SatisfiesCondition that) {
         super.visit(that);

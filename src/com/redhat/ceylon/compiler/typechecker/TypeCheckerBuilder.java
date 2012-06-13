@@ -29,11 +29,7 @@ public class TypeCheckerBuilder {
     private List<VirtualFile> srcDirectories = new ArrayList<VirtualFile>();
     private final VFS vfs = new VFS();
     private boolean verifyDependencies = true;
-    private AssertionVisitor assertionVisitor = new AssertionVisitor() { 
-        @Override protected boolean includeWarnings() {
-            return false;
-        }
-    };
+    private AssertionVisitor assertionVisitor = new AssertionVisitor();
     private ModuleManagerFactory moduleManagerFactory;
     private RepositoryManager repositoryManager;
     private List<String> moduleFilters = new ArrayList<String>();
@@ -67,7 +63,7 @@ public class TypeCheckerBuilder {
         this.moduleFilters.addAll(moduleFilters);
         return this;
     }
-    
+
     /**
      * @deprecated this is bad and a temporary hack
      *
@@ -95,12 +91,23 @@ public class TypeCheckerBuilder {
         this.verbose = isVerbose;
         return this;
     }
-    
+
     public TypeCheckerBuilder statistics(boolean statistics) {
         this.statistics = statistics;
         return this;
     }
-    
+
+    /**
+     * Enables or disables output of warning messages.
+     *
+     * @param includeWarnings true to enable warnings false to disable.
+     * @return typecheker instance with switched option.
+     */
+    public TypeCheckerBuilder includeWarnings(boolean includeWarnings) {
+        assertionVisitor.includeWarnings(includeWarnings);
+        return this;
+    }
+
     public TypeCheckerBuilder moduleManagerFactory(ModuleManagerFactory moduleManagerFactory){
     	this.moduleManagerFactory = moduleManagerFactory;
     	return this;
@@ -109,7 +116,7 @@ public class TypeCheckerBuilder {
     public VFS getVFS(){
         return vfs;
     }
-    
+
     public TypeChecker getTypeChecker() {
         if (repositoryManager == null) {
             repositoryManager = new RepositoryManagerBuilder( new LeakingLogger() ).buildRepository();

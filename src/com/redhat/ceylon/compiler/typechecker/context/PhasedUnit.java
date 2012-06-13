@@ -33,6 +33,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Validator;
 import com.redhat.ceylon.compiler.typechecker.util.AssertionVisitor;
 import com.redhat.ceylon.compiler.typechecker.util.PrintVisitor;
 import com.redhat.ceylon.compiler.typechecker.util.StatisticsVisitor;
+import com.redhat.ceylon.compiler.typechecker.util.UsageVisitor;
 
 /**
  * Represent a unit and each of the type checking phases
@@ -63,7 +64,7 @@ public class PhasedUnit {
         return srcDir;
     }
 
-    public PhasedUnit(VirtualFile unitFile, VirtualFile srcDir, Tree.CompilationUnit cu, 
+    public PhasedUnit(VirtualFile unitFile, VirtualFile srcDir, Tree.CompilationUnit cu,
             Package p, ModuleManager moduleManager, Context context, List<CommonToken> tokenStream) {
         this.compilationUnit = cu;
         this.pkg = p;
@@ -103,11 +104,11 @@ public class PhasedUnit {
     }
 
     @Deprecated
-    protected PhasedUnit(VirtualFile unitFile, VirtualFile srcDir, Tree.CompilationUnit cu, 
+    protected PhasedUnit(VirtualFile unitFile, VirtualFile srcDir, Tree.CompilationUnit cu,
             Package p, ModuleManager moduleManager, Context context) {
         this(unitFile, srcDir, cu, p, moduleManager, context, null);
     }
-    
+
     public Module visitSrcModulePhase() {
         if ( ModuleManager.MODULE_FILE.equals(fileName) ||
                 ModuleManager.PACKAGE_FILE.equals(fileName) ) {
@@ -124,7 +125,7 @@ public class PhasedUnit {
             compilationUnit.visit(moduleVisitor);
         }
     }
-    
+
     public boolean isFullyTyped() {
         return fullyTyped;
     }
@@ -132,7 +133,7 @@ public class PhasedUnit {
     public void setFullyTyped(boolean fullyTyped) {
         this.fullyTyped = fullyTyped;
     }
-    
+
     public boolean isFlowAnalyzed() {
         return flowAnalyzed;
     }
@@ -219,11 +220,15 @@ public class PhasedUnit {
         }
     }
 
+    public void analyseUsages() {
+        compilationUnit.visit(new UsageVisitor());
+    }
+
     public void collectUnitDependencies(PhasedUnits phasedUnits, List<PhasedUnits> phasedUnitsOfDependencies) {
         //System.out.println("Run collecting unit dependencies phase for " + fileName);
         compilationUnit.visit(new DependedUponVisitor(this, phasedUnits, phasedUnitsOfDependencies));
     }
-    
+
     public synchronized void analyseFlow() {
         if (! flowAnalyzed) {
             //System.out.println("Validate control flow for " + fileName);
@@ -246,7 +251,7 @@ public class PhasedUnit {
     public void generateStatistics(StatisticsVisitor statsVisitor) {
         compilationUnit.visit(statsVisitor);
     }
-    
+
     public void runAssertions(AssertionVisitor av) {
         //System.out.println("Running assertions for " + fileName);
         compilationUnit.visit(av);
@@ -256,11 +261,11 @@ public class PhasedUnit {
         System.out.println("Displaying " + fileName);
         compilationUnit.visit(new PrintVisitor());
     }
-    
+
     public Package getPackage() {
         return pkg;
     }
-    
+
     public Unit getUnit() {
         return unit;
     }

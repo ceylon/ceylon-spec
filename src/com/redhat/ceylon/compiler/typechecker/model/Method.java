@@ -24,6 +24,9 @@ public class Method extends MethodOrValue implements Generic, Scope, Functional 
     private List<Declaration> overloads;
     private boolean declaredVoid;
 
+    //list of identifiers declared somewhere and used inside this method
+    private List<String> usages = new ArrayList();
+
     /*public boolean isFormal() {
          return formal;
      }
@@ -31,7 +34,7 @@ public class Method extends MethodOrValue implements Generic, Scope, Functional 
      public void setFormal(boolean formal) {
          this.formal = formal;
      }*/
-    
+
     @Override
     public boolean isParameterized() {
         return !typeParameters.isEmpty();
@@ -59,38 +62,38 @@ public class Method extends MethodOrValue implements Generic, Scope, Functional 
     public boolean isOverloaded() {
     	return overloaded;
     }
-    
+
     public void setOverloaded(boolean overloaded) {
 		this.overloaded = overloaded;
 	}
-    
+
     public void setAbstraction(boolean abstraction) {
         this.abstraction = abstraction;
     }
-    
+
     @Override
     public boolean isAbstraction() {
         return abstraction;
     }
-    
+
     @Override
     public boolean isDeclaredVoid() {
         return declaredVoid;
     }
-    
+
     public void setDeclaredVoid(boolean declaredVoid) {
         this.declaredVoid = declaredVoid;
     }
-    
+
     @Override
     public List<Declaration> getOverloads() {
         return overloads;
     }
-    
+
     public void setOverloads(List<Declaration> overloads) {
         this.overloads = overloads;
     }
-    
+
     public Parameter getParameter(String name) {
         for (Declaration d : getMembers()) {
             if (isParameter(d) && isNamed(name, d)) {
@@ -99,5 +102,23 @@ public class Method extends MethodOrValue implements Generic, Scope, Functional 
         }
         return null;
     }
-    
+
+/**
+     * Gets the list of identifiers used inside this method.
+     *
+     * @return list of identifiers.
+     */
+    public List<String> getUsages() {
+        return usages;
+    }
+
+    /**
+     * Checks usage of the given identifier.
+     *
+     * @param identifier the identifier to check.
+     * @return true if the given identifier is used inside method and false otherwise.
+     */
+    public boolean isUsed(String identifier) {
+        return usages.contains(identifier);
+    }
 }

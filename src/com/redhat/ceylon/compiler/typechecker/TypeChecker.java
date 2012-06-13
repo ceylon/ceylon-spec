@@ -58,11 +58,11 @@ public class TypeChecker {
     public PhasedUnits getPhasedUnits() {
         return phasedUnits;
     }
-    
+
     public List<PhasedUnits> getPhasedUnitsOfDependencies() {
         return phasedUnitsOfDependencies;
     }
-    
+
     public void setPhasedUnitsOfDependencies(
             List<PhasedUnits> phasedUnitsOfDependencies) {
         this.phasedUnitsOfDependencies = phasedUnitsOfDependencies;
@@ -163,6 +163,11 @@ public class TypeChecker {
             pu.analyseFlow();
         }
 
+        //check usage of private attributes/methods
+        for (PhasedUnit pu: listOfUnits) {
+            pu.analyseUsages();
+        }
+
         if (!forceSilence) {
             for (PhasedUnit pu : listOfUnits) {
                 if (verbose) {
@@ -175,9 +180,9 @@ public class TypeChecker {
             	statsVisitor.print();
             assertionVisitor.print(verbose);
         }
-        
+
     }
-    
+
     public int getErrors(){
     	return assertionVisitor.getErrors();
     }
@@ -185,7 +190,7 @@ public class TypeChecker {
     public int getWarnings(){
     	return assertionVisitor.getWarnings();
     }
-    
+
     public List<Message> getMessages(){
     	return assertionVisitor.getFoundErrors();
     }
