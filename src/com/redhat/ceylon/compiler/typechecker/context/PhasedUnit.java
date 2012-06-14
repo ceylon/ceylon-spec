@@ -33,6 +33,7 @@ import com.redhat.ceylon.compiler.typechecker.tree.Validator;
 import com.redhat.ceylon.compiler.typechecker.util.AssertionVisitor;
 import com.redhat.ceylon.compiler.typechecker.util.PrintVisitor;
 import com.redhat.ceylon.compiler.typechecker.util.StatisticsVisitor;
+import com.redhat.ceylon.compiler.typechecker.util.UsageVisitor;
 
 /**
  * Represent a unit and each of the type checking phases
@@ -219,6 +220,10 @@ public class PhasedUnit {
         }
     }
 
+    public void analyseUsages() {
+        compilationUnit.visit(new UsageVisitor());
+    }
+    
     public void collectUnitDependencies(PhasedUnits phasedUnits, List<PhasedUnits> phasedUnitsOfDependencies) {
         //System.out.println("Run collecting unit dependencies phase for " + fileName);
         compilationUnit.visit(new DependedUponVisitor(this, phasedUnits, phasedUnitsOfDependencies));

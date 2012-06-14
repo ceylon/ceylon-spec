@@ -29,11 +29,7 @@ public class TypeCheckerBuilder {
     private List<VirtualFile> srcDirectories = new ArrayList<VirtualFile>();
     private final VFS vfs = new VFS();
     private boolean verifyDependencies = true;
-    private AssertionVisitor assertionVisitor = new AssertionVisitor() { 
-        @Override protected boolean includeWarnings() {
-            return false;
-        }
-    };
+    private AssertionVisitor assertionVisitor = new AssertionVisitor();
     private ModuleManagerFactory moduleManagerFactory;
     private RepositoryManager repositoryManager;
     private List<String> moduleFilters = new ArrayList<String>();
@@ -100,7 +96,18 @@ public class TypeCheckerBuilder {
         this.statistics = statistics;
         return this;
     }
-    
+
+    /**
+     * Enables or disables output of the warning messages.
+     *
+     * @param includeWarnings true to enable warnings and false to disable.
+     * @return builder instance with warnings option set.
+     */
+    public TypeCheckerBuilder includeWarnings(boolean includeWarnings) {
+        this.assertionVisitor.includeWarnings(includeWarnings);
+        return this;
+    }
+
     public TypeCheckerBuilder moduleManagerFactory(ModuleManagerFactory moduleManagerFactory){
     	this.moduleManagerFactory = moduleManagerFactory;
     	return this;
