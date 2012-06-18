@@ -2341,7 +2341,7 @@ public class ExpressionVisitor extends Visitor {
                 checkAssignable(rhset, lhset, that.getRightTerm(), 
                         "resulting set element type must be assignable to to declared set element type");
             }            
-            that.setTypeModel(unit.getSetType(lhst)); //in theory, we could make this narrower
+            that.setTypeModel(lhst); //in theory, we could make this narrower
         }
     }
 
