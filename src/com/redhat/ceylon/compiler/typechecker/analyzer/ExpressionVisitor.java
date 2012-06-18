@@ -2348,7 +2348,7 @@ public class ExpressionVisitor extends Visitor {
                 checkAssignable(rhset, lhset, that.getRightTerm(), 
                         "resulting set element type must be assignable to to declared set element type");
             }            
-            that.setTypeModel(unit.getSetType(lhst)); //in theory, we could make this narrower
+            that.setTypeModel(lhst); //in theory, we could make this narrower
         }
     }
 
@@ -2558,7 +2558,6 @@ public class ExpressionVisitor extends Visitor {
 
     @Override public void visit(Tree.BitwiseOp that) {
         super.visit(that);
-        that.addWarning("Set operators not yet supported");
         visitSetOperator(that);
     }
 
@@ -2632,7 +2631,6 @@ public class ExpressionVisitor extends Visitor {
         
     @Override public void visit(Tree.BitwiseAssignmentOp that) {
         super.visit(that);
-        that.addWarning("Set operators not yet supported");
         visitSetAssignmentOperator(that);
         checkAssignability(that.getLeftTerm(), that);
     }
