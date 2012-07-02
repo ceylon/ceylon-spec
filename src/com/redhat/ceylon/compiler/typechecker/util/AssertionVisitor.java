@@ -23,6 +23,8 @@ public class AssertionVisitor extends Visitor implements NaturalVisitor {
     private int errors = 0;
     private int warnings = 0;
 
+    private boolean includeWarnings = false;
+
     @Override
     public void visit(Tree.TypedDeclaration that) {
         if (that.getType()!=null) {
@@ -184,7 +186,7 @@ public class AssertionVisitor extends Visitor implements NaturalVisitor {
                     out( (AnalysisError) err );
                 }
                 else if (err instanceof AnalysisWarning) {
-                    if (includeWarnings()) {
+                    if (includeWarnings) {
                         out( (AnalysisWarning) err );
                     }
                 }
@@ -200,8 +202,8 @@ public class AssertionVisitor extends Visitor implements NaturalVisitor {
         }
     }
     
-    protected boolean includeWarnings() {
-        return true;
+    public void includeWarnings(boolean includeWarnings) {
+        this.includeWarnings = includeWarnings;
     }
     
     @Override

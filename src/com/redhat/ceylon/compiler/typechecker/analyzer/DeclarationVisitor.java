@@ -324,8 +324,28 @@ public class DeclarationVisitor extends Visitor {
                 that.addError("sequenced type parameters for methods not yet supported");
             }
         }
+
+        //let's search which identifiers are used inside this method.
+        collectUsage(that, m.getUsages());
     }
-    
+
+    /**
+     * Searches identifiers used by method.
+     * 
+     * @param node method or method's details
+     * @param identifiers the list of used identifiers.
+     */
+    private void collectUsage(Node node, List<String> identifiers) {
+        List<Node> children = node.getChildren();
+        for (Node n : children) {
+            if (n instanceof Tree.Identifier) {
+                identifiers.add(n.getText());
+            } else {
+                collectUsage(n, identifiers);
+            }
+        }
+    }
+
     @Override
     public void visit(Tree.AnyAttribute that) {
         super.visit(that);
