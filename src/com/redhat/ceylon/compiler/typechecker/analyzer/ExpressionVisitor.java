@@ -2324,7 +2324,7 @@ public class ExpressionVisitor extends Visitor {
 			l = ((Tree.PositiveOp) l).getTerm();
 		}
 		if (u instanceof Tree.NegativeOp) {
-			u = ((Tree.NegativeOp) l).getTerm();
+			u = ((Tree.NegativeOp) u).getTerm();
 			unegated = true;
 		}
 		else if (u instanceof Tree.PositiveOp) {
