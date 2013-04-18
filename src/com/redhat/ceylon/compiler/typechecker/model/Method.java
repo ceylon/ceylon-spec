@@ -23,6 +23,8 @@ public class Method extends MethodOrValue implements Generic, Scope, Functional 
     private boolean abstraction;
     private List<Declaration> overloads;
     private boolean declaredAnything;
+    private InlineInfo inlineInfo;
+    
 
     /*public boolean isFormal() {
          return formal;
@@ -32,6 +34,15 @@ public class Method extends MethodOrValue implements Generic, Scope, Functional 
          this.formal = formal;
      }*/
     
+
+    public InlineInfo getInlineInfo() {
+        return inlineInfo;
+    }
+
+    public void setInlineInfo(InlineInfo inlineInfo) {
+        this.inlineInfo = inlineInfo;
+    }
+
     @Override
     public boolean isParameterized() {
         return !typeParameters.isEmpty();
