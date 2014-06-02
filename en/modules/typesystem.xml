@@ -755,7 +755,7 @@
             
             <synopsis>TupleType: "[" TypeList "]"</synopsis>
             
-            <synopsis>TypeList: (EntryType ",")* UnionType ("*"|"+")?</synopsis>
+            <synopsis>TypeList: (Type ",")* UnionType ("*"|"+")?</synopsis>
             
             <itemizedlist>
                 <listitem>
