@@ -98,15 +98,17 @@ moduleDescriptor returns [ModuleDescriptor moduleDescriptor]
       { $moduleDescriptor = new ModuleDescriptor($MODULE); 
         $moduleDescriptor.setAnnotationList($annotations.annotationList);
         $moduleDescriptor.getCompilerAnnotations().addAll($compilerAnnotations.annotations); }
-      packagePath
-      { $moduleDescriptor.setImportPath($packagePath.importPath); }
-      (
-        CHAR_LITERAL
-        { $moduleDescriptor.setVersion(new QuotedLiteral($CHAR_LITERAL)); }
-      |
-        STRING_LITERAL
-        { $moduleDescriptor.setVersion(new QuotedLiteral($STRING_LITERAL)); }
-      )
+      (    
+        packagePath
+        { $moduleDescriptor.setImportPath($packagePath.importPath); }
+        (
+          CHAR_LITERAL
+          { $moduleDescriptor.setVersion(new QuotedLiteral($CHAR_LITERAL)); }
+        |
+          STRING_LITERAL
+          { $moduleDescriptor.setVersion(new QuotedLiteral($STRING_LITERAL)); }
+        )
+      )?
       importModuleList
       { $moduleDescriptor.setImportModuleList($importModuleList.importModuleList); }
     ;
@@ -134,7 +136,9 @@ packageDescriptor returns [PackageDescriptor packageDescriptor]
       { $packageDescriptor = new PackageDescriptor($PACKAGE); 
         $packageDescriptor.setAnnotationList($annotations.annotationList); 
         $packageDescriptor.getCompilerAnnotations().addAll($compilerAnnotations.annotations); }
-      packagePath
+      (
+        packagePath
+      )?
       { $packageDescriptor.setImportPath($packagePath.importPath); 
         expecting=SEMICOLON; }
       SEMICOLON

@@ -107,7 +107,7 @@ public class Package
     }
 
     public String getNameAsString() {
-        if (nameAsString == null){
+        if (nameAsString == null || nameAsString.isEmpty()){
             nameAsString = formatPath(name);
         }
         return nameAsString;
