@@ -449,16 +449,19 @@ public class Util {
      * account that a subtype is a "duplicate" of its
      * supertype.
      */
-    public static void addToUnion(List<ProducedType> list, ProducedType pt) {
+    public static void addToUnion(List<ProducedType> list, 
+            ProducedType pt) {
         if (pt==null) {
             return;
         }
         if (pt.getDeclaration() instanceof UnionType) {
             // cheaper c-for than foreach
-            List<ProducedType> caseTypes = pt.getDeclaration().getCaseTypes();
+            List<ProducedType> caseTypes = 
+                    pt.getDeclaration().getCaseTypes();
             for ( int i=0,l=caseTypes.size();i<l;i++ ) {
                 ProducedType t = caseTypes.get(i);
-                addToUnion( list, t.substitute(pt.getTypeArguments()) );
+                addToUnion(list, 
+                        t.substitute(pt.getTypeArguments()));
             }
         }
         else if (pt.isWellDefined()) {
@@ -481,23 +484,31 @@ public class Util {
         }
     }
     
+    public static void addToIntersection(List<ProducedType> list, 
+            ProducedType pt, Unit unit) {
+        addToIntersection(list, pt, unit, true);
+    }
+    
     /**
      * Helper method for eliminating duplicate types from
      * lists of types that form an intersection type, taking 
      * into account that a supertype is a "duplicate" of its
      * subtype.
      */
-    public static void addToIntersection(List<ProducedType> list, ProducedType pt, 
-            Unit unit) {
+    public static void addToIntersection(List<ProducedType> list, 
+            ProducedType pt, Unit unit, boolean reduceDisjointTypes) {
         if (pt==null) {
             return;
         }
         if (pt.getDeclaration() instanceof IntersectionType) {
-            List<ProducedType> satisfiedTypes = pt.getDeclaration().getSatisfiedTypes();
+            List<ProducedType> satisfiedTypes = 
+                    pt.getDeclaration().getSatisfiedTypes();
             // cheaper c-for than foreach
-            for ( int i=0,l=satisfiedTypes.size();i<l;i++ ) {
+            for (int i=0,l=satisfiedTypes.size(); i<l; i++) {
                 ProducedType t = satisfiedTypes.get(i);
-                addToIntersection(list, t.substitute(pt.getTypeArguments()), unit);
+                addToIntersection(list, 
+                        t.substitute(pt.getTypeArguments()), 
+                        unit, reduceDisjointTypes);
             }
         }
         else {
@@ -507,33 +518,37 @@ public class Util {
             //(the intersection of disjoint types is empty)
             
             // cheaper c-for than foreach
-            List<TypeDeclaration> supertypes = pt.getDeclaration()
-                    .getSupertypeDeclarations();
-            for ( int i=0, l=supertypes.size(); i<l; i++ ) {
-                TypeDeclaration supertype = supertypes.get(i);
-                List<TypeDeclaration> ctds = supertype.getCaseTypeDeclarations();
-                if (ctds!=null) {
-                    TypeDeclaration ctd=null;
-                    // cheaper c-for than foreach
-                    for (int cti=0, ctl=ctds.size(); cti<ctl; cti++) {
-                        TypeDeclaration ct = ctds.get(cti);
-                        if (pt.getDeclaration().inherits(ct)) {
-                            ctd = ct;
-                            break;
-                        }
-                    }
-                    if (ctd!=null) {
+            if (!list.isEmpty() && reduceDisjointTypes) {
+                List<TypeDeclaration> supertypes = 
+                        pt.getDeclaration().getSupertypeDeclarations();
+                for (int i=0, l=supertypes.size(); i<l; i++) {
+                    TypeDeclaration supertype = supertypes.get(i);
+                    List<TypeDeclaration> ctds = 
+                            
+                            supertype.getCaseTypeDeclarations();
+                    if (ctds!=null) {
+                        TypeDeclaration ctd=null;
                         // cheaper c-for than foreach
                         for (int cti=0, ctl=ctds.size(); cti<ctl; cti++) {
                             TypeDeclaration ct = ctds.get(cti);
-                            if (ct!=ctd) {
-                                // cheaper c-for than foreach
-                                for (int ti=0, tl=list.size(); ti<tl; ti++) {
-                                    ProducedType t = list.get(ti);
-                                    if (t.getDeclaration().inherits(ct)) {
-                                        list.clear();
-                                        list.add(new NothingType(unit).getType());
-                                        return;
+                            if (pt.getDeclaration().inherits(ct)) {
+                                ctd = ct;
+                                break;
+                            }
+                        }
+                        if (ctd!=null) {
+                            // cheaper c-for than foreach
+                            for (int cti=0, ctl=ctds.size(); cti<ctl; cti++) {
+                                TypeDeclaration ct = ctds.get(cti);
+                                if (ct!=ctd) {
+                                    // cheaper c-for than foreach
+                                    for (int ti=0, tl=list.size(); ti<tl; ti++) {
+                                        ProducedType t = list.get(ti);
+                                        if (t.getDeclaration().inherits(ct)) {
+                                            list.clear();
+                                            list.add(new NothingType(unit).getType());
+                                            return;
+                                        }
                                     }
                                 }
                             }
@@ -545,7 +560,7 @@ public class Util {
             Boolean add = pt.isWellDefined();
             if (add) {
                 // cheaper c-for than foreach
-                for (int i=0;i<list.size();i++) {
+                for (int i=0; i<list.size(); i++) {
                     ProducedType t = list.get(i);
                     if (pt.isSupertypeOf(t)) {
                         add = false;
@@ -566,7 +581,9 @@ public class Util {
                             !pt.containsUnknowns() &&
                             !t.containsUnknowns()) {
                         //canonicalize T<InX,OutX>&T<InY,OutY> to T<InX|InY,OutX&OutY>
-                        ProducedType pi = principalInstantiation(pt.getDeclaration(), pt, t, unit);
+                        ProducedType pi = 
+                                principalInstantiation(pt.getDeclaration(), 
+                                        pt, t, unit);
                         if (!pi.containsUnknowns()) {
                             list.remove(i);
                             list.add(pi);
@@ -580,9 +597,11 @@ public class Util {
                 //supertype of the intersection, even though
                 //it is not a supertype of any of the 
                 //intersected types!
-                IntersectionType it = new IntersectionType(unit);
+                IntersectionType it = 
+                        new IntersectionType(unit);
                 it.setSatisfiedTypes(list);
-                ProducedType type = it.canonicalize().getType();
+                ProducedType type = 
+                        it.canonicalize().getType();
                 if (pt.isSupertypeOf(type)) {
                     add = false;
                 }
@@ -953,7 +972,7 @@ public class Util {
         List<Declaration> results = null;
         Declaration result = null;
         Declaration inexactMatch = null;
-        for (int i = 0,l = members.size() ; i < l ; i++) {
+        for (int i = 0, l = members.size(); i < l ; i++) {
             Declaration d = members.get(i);
             if (isResolvable(d) && isNamed(name, d)) {
                 if (signature==null) {
@@ -983,11 +1002,12 @@ public class Util {
                     if (hasMatchingSignature(signature, ellipsis, d)) {
                         //we have found an exactly matching 
                         //overloaded declaration
-                        if(result == null)
+                        if (result == null) {
                             result = d; // first match
-                        else{
+                        }
+                        else {
                             // more than one match, move to array
-                            if(results == null){
+                            if (results == null) {
                                 results = new ArrayList<Declaration>(2);
                                 results.add(result);
                             }
@@ -998,10 +1018,11 @@ public class Util {
             }
         }
         // if we never needed a results array
-        if(results == null){
+        if (results == null) {
             // single result
-            if(result != null)
+            if (result != null) {
                 return result;
+            }
             // no exact match
             return inexactMatch;
         }
@@ -1061,15 +1082,19 @@ public class Util {
     public static List<ProducedType> getSignature(Declaration dec) {
         if(dec instanceof Functional == false)
             return null;
-        List<ParameterList> parameterLists = ((Functional)dec).getParameterLists();
-        if(parameterLists == null || parameterLists.isEmpty())
+        List<ParameterList> parameterLists = 
+                ((Functional)dec).getParameterLists();
+        if (parameterLists == null || parameterLists.isEmpty()) {
             return null;
+        }
         ParameterList parameterList = parameterLists.get(0);
-        if(parameterList == null || parameterList.getParameters() == null)
+        if (parameterList == null || 
+                parameterList.getParameters() == null) {
             return null;
+        }
         int size = parameterList.getParameters().size();
         List<ProducedType> signature = new ArrayList<ProducedType>(size);
-        for(Parameter param : parameterList.getParameters()){
+        for (Parameter param : parameterList.getParameters()) {
             signature.add(param.getModel()==null ? 
                     new UnknownType(dec.getUnit()).getType() : 
                     param.getModel().getType());
@@ -1137,10 +1162,10 @@ public class Util {
             ProducedType arg;
             ProducedType rta = first.getTypeArguments().get(tp);
             ProducedType prta = second.getTypeArguments().get(tp);
-            if (tp.isContravariant()) {
+            if (first.isContravariant(tp) && second.isContravariant(tp)) {
                 arg = unionType(rta, prta, unit);
             }
-            else if (tp.isCovariant()) {
+            else if (first.isCovariant(tp) && second.isCovariant(tp)) {
                 arg = intersectionType(rta, prta, unit);
             }
             else {
@@ -1164,7 +1189,8 @@ public class Util {
             }
             args.add(arg);
         }
-        return dec.getProducedType(principalQualifyingType(first, second, dec, unit), args);
+        ProducedType pqt = principalQualifyingType(first, second, dec, unit);
+        return dec.getProducedType(pqt, args);
     }
     
     public static boolean areConsistentSupertypes(ProducedType st1, 
@@ -1187,13 +1213,14 @@ public class Util {
         return !intersectionType(st1, st2, unit).isNothing();
     }
 
-    public static ProducedType intersectionOfSupertypes(ClassOrInterface ci) {
-        List<ProducedType> list = new ArrayList<ProducedType>(ci.getSatisfiedTypes().size()+1);
-        if (ci.getExtendedType()!=null) {
-            list.add(ci.getExtendedType());
+    public static ProducedType intersectionOfSupertypes(TypeDeclaration td) {
+        List<ProducedType> list = 
+                new ArrayList<ProducedType>(td.getSatisfiedTypes().size()+1);
+        if (td.getExtendedType()!=null) {
+            list.add(td.getExtendedType());
         }
-        list.addAll(ci.getSatisfiedTypes());
-        IntersectionType it = new IntersectionType(ci.getUnit());
+        list.addAll(td.getSatisfiedTypes());
+        IntersectionType it = new IntersectionType(td.getUnit());
         it.setSatisfiedTypes(list);
         return it.getType();
     }

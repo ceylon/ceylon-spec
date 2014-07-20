@@ -633,12 +633,6 @@ Digit{1,2} ":" Digit{2} ( ":" Digit{2} ( ":" Digit{3} )? )?
         <literal>A</literal>, then <literal>A</literal> must be a subtype of 
         <literal>P</literal>.</para>
             
-        <comment><para>TODO: should we support an infix-operator-style syntax for method 
-        invocation like <literal>string split ",;".contains</literal>? This is especially 
-        nice for conceptually symmetric operations like <literal>a xor b</literal>, or when 
-        the argument is an anonymous function like 
-        <literal>people map (Person p)=>p.firstName+p.lastName</literal>.</para></comment>
-            
         <section id="directinvocations">
             <title>Direct invocations</title>
             
@@ -819,7 +813,7 @@ Digit{1,2} ":" Digit{2} ( ":" Digit{2} ( ":" Digit{3} )? )?
                     <para>the expression type <literal>T</literal> is an invariant 
                     subtype of <literal>{X*}</literal>, for some type <literal>X</literal>
                     and the sequential type of the spread argument is 
-                    <literal>X[]</literal>,</para>
+                    <literal>X[]</literal>.</para>
                 </listitem>
             </itemizedlist>
             
@@ -894,10 +888,10 @@ Digit{1,2} ":" Digit{2} ( ":" Digit{2} ( ":" Digit{3} )? )?
             not contain a reference to a variable value.</para>
             
             <comment><para>Note: a comprehension, like a spread argument, is not considered an 
-            expression. An expression, when evaluated, produces a single value. A comprehension,
+            expression. An expression, when evaluated, produces a single value. A comprehension
             produces multiple values, like a spread argument, or like a series of listed 
             arguments. Therefore, a comprehension may only appear in an argument list or an 
-            enumeration expression. This is however, no limitation; we can simply wrap the
+            enumeration expression. This is, however, no limitation; we can simply wrap the
             comprehension in braces in order to get an expression of type <literal>{T*}</literal>,
             or in brackets to get an expression of type <literal>[T*]</literal>.</para></comment>
             
@@ -1024,7 +1018,7 @@ Digit{1,2} ":" Digit{2} ( ":" Digit{2} ( ":" Digit{3} )? )?
                     <xref linkend="enumeration"/>, is formed from the ordinary list of arguments, 
                     and assigned to that parameter.</para>
                     
-                    <para>If there is no such parameter, and the the ordinary list of arguments is
+                    <para>If there is no such parameter, and the ordinary list of arguments is
                     nonempty, then construction of the positional argument list fails, and the 
                     invocation is not well-typed.</para>
                     
@@ -1569,8 +1563,8 @@ Digit{1,2} ":" Digit{2} ( ":" Digit{2} ( ":" Digit{3} )? )?
                 <literal>&gt;=</literal>,
                 <literal>in</literal>,
                 <literal>is</literal>,
-                <literal>of</literal>,
-                <literal>satisfies</literal>
+                <literal>of</literal><!--,
+                <literal>satisfies</literal>-->
                 </entry>
                 <entry>Binary (and ternary)</entry>
                 <entry>None</entry>
@@ -1636,7 +1630,7 @@ Digit{1,2} ":" Digit{2} ( ":" Digit{2} ( ":" Digit{3} )? )?
                 <literal>%=</literal>, 
                 <literal>&amp;=</literal>, 
                 <literal>|=</literal>, 
-                <literal>^=</literal>, 
+                <!--<literal>^=</literal>,-->
                 <literal>~=</literal>, 
                 <literal>&amp;&amp;=</literal>, 
                 <literal>||=</literal>
@@ -1970,19 +1964,19 @@ Digit{1,2} ":" Digit{2} ( ":" Digit{2} ( ":" Digit{3} )? )?
         <itemizedlist>
             <listitem>
                 <para><literal>l&lt;x&lt;u</literal> means 
-                <literal>x&gt;l &amp;&amp; x&lt;u</literal>,</para>
+                <literal>let t=x in l&lt;t &amp;&amp; t&lt;u</literal>,</para>
             </listitem>
             <listitem>
                 <para><literal>l&lt;=x&lt;u</literal> means 
-                <literal>x&gt;=l &amp;&amp; x&lt;u</literal>,</para>
+                <literal>let t=x in l&lt;=t &amp;&amp; t&lt;u</literal>,</para>
             </listitem>
             <listitem>
                 <para><literal>l&lt;x&lt;=u</literal> means 
-                <literal>x&gt;l &amp;&amp; x&lt;=u</literal>, and</para>
+                <literal>let t=x in l&lt;t &amp;&amp; t&lt;=u</literal>, and</para>
             </listitem>
             <listitem>
                 <para><literal>l&lt;=x&lt;=u</literal> means 
-                <literal>x&gt;=l &amp;&amp; x&lt;=u</literal></para>
+                <literal>let t=x in l&lt;=t &amp;&amp; t&lt;=u</literal></para>
             </listitem>
         </itemizedlist>
         
@@ -2501,7 +2495,7 @@ Digit{1,2} ":" Digit{2} ( ":" Digit{2} ( ":" Digit{3} )? )?
         <row>
             <entry><literal>lhs++</literal></entry>
             <entry>increment</entry>
-            <entry><literal>(++lhs).predecessor</literal></entry>
+            <entry></entry>
             <entry>variable of type <literal>Ordinal&lt;T&gt;</literal></entry>
             <entry></entry>
             <entry><literal>T</literal></entry>
@@ -2509,7 +2503,7 @@ Digit{1,2} ":" Digit{2} ( ":" Digit{2} ( ":" Digit{3} )? )?
         <row>
             <entry><literal>lhs--</literal></entry>
             <entry>decrement</entry>
-            <entry><literal>(--lhs).successor</literal></entry>
+            <entry></entry>
             <entry>variable of type <literal>Ordinal&lt;T&gt;</literal></entry>
             <entry></entry>
             <entry><literal>T</literal></entry>
@@ -2634,6 +2628,19 @@ Digit{1,2} ":" Digit{2} ( ":" Digit{2} ( ":" Digit{3} )? )?
     </tbody>
     </tgroup>
     </table>
+    
+    <para>The postfix increment and decrement operators are defined as follows:</para>
+    
+    <itemizedlist>
+        <listitem>
+            <para><literal>x++</literal> means the value of <literal>result</literal>
+            after executing <literal>X result=x; ++x;</literal>, and</para>
+        </listitem>
+        <listitem>
+            <para><literal>x--</literal> means the value of <literal>result</literal>
+            after executing <literal>X result=x; --x;</literal>.</para>
+        </listitem>
+    </itemizedlist>
     
         <para>Arithmetic operators automatically widen from <literal>Integer</literal> 
         to <literal>Float</literal> when necessary. If one operand expression is 

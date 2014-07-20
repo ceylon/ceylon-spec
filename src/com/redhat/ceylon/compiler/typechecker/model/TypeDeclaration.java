@@ -267,7 +267,7 @@ public abstract class TypeDeclaration extends Declaration
                 }
             }
             if (members.isEmpty()) {
-                members.addAll(getInheritedMembers(name));
+                members.addAll(getInheritedMembers(name, visited));
             }
             return members;
         }
@@ -355,6 +355,8 @@ public abstract class TypeDeclaration extends Declaration
      * Does the given declaration inherit the given type?
      */
     public boolean inherits(TypeDeclaration dec) {
+        //TODO: optimize this to avoid walking the
+        //      same supertypes multiple times
         if (this instanceof UnionType) {
             ProducedType st = getType().getSupertype(dec);
             return st!=null && !st.isNothing();
@@ -807,15 +809,26 @@ public abstract class TypeDeclaration extends Declaration
     }
     
     public List<TypeDeclaration> getSupertypeDeclarations() {
+        //TODO: optimize this to avoid walking the
+        //      same supertypes multiple times
         if (this instanceof UnionType) {
             List<TypeDeclaration> ctds = getCaseTypeDeclarations();
             List<TypeDeclaration> result =
                     new ArrayList<TypeDeclaration>(ctds.size());
+            ProducedType type = getType();
             for (int i=0, l=ctds.size(); i<l; i++) {
+                //actually the loop is unnecessary, we
+                //only need to consider the first case
                 TypeDeclaration ctd = ctds.get(i);
-                ProducedType st = getType().getSupertype(ctd);
-                if (st!=null && !st.isNothing()) {
-                    result.add(ctd);
+                List<TypeDeclaration> ctsts = ctd.getSupertypeDeclarations();
+                for (int j=0; j<ctsts.size(); j++) {
+                    TypeDeclaration std = ctsts.get(j);
+                    ProducedType st = type.getSupertype(std);
+                    if (st!=null && !st.isNothing()) {
+                        if (!result.contains(std)) {
+                            result.add(std);
+                        }
+                    }
                 }
             }
             return result;
@@ -827,7 +840,12 @@ public abstract class TypeDeclaration extends Declaration
             if (etd!=null) {
                 List<TypeDeclaration> etsts = etd.getSupertypeDeclarations();
                 result = new ArrayList<TypeDeclaration>(etsts.size() + stds.size()*2);
-                result.addAll(etsts);
+                for (int j=0; j<etsts.size(); j++) {
+                    TypeDeclaration st = etsts.get(j);
+                    if (!result.contains(st)) {
+                        result.add(st);
+                    }
+                }
             }
             else {
                 result = new ArrayList<TypeDeclaration>(stds.size()*2);
@@ -835,10 +853,18 @@ public abstract class TypeDeclaration extends Declaration
             // cheaper c-for than foreach
             for (int i=0, l=stds.size(); i<l; i++) {
                 TypeDeclaration std = stds.get(i);
-                result.addAll(std.getSupertypeDeclarations());
+                List<TypeDeclaration> ststs = std.getSupertypeDeclarations();
+                for (int j=0; j<ststs.size(); j++) {
+                    TypeDeclaration st = ststs.get(j);
+                    if (!result.contains(st)) {
+                        result.add(st);
+                    }
+                }
             }
             if (this instanceof ClassOrInterface) {
-                result.add(this);
+                if (!result.contains(this)) {
+                    result.add(this);
+                }
             }
             return result;
         }

@@ -125,18 +125,38 @@ public class RefinementVisitor extends Visitor {
     @Override
     public void visit(Tree.AnyMethod that) {
         super.visit(that);
-        TypedDeclaration td = that.getDeclarationModel();
+        Method m = that.getDeclarationModel();
+        Declaration refined = m.getRefinedDeclaration();
+        if (m.isOverloaded()) { 
+            if (refined==m || 
+                    !(refined instanceof Method) || 
+                    !((Method) refined).isOverloaded()) {
+                that.addError("overloaded method does not refine an overloaded method");
+            }
+            //the Java model loader does not do this:
+            /*if (!isTypeUnknown(m.getType())) {
+                Method abstraction = (Method) 
+                        m.getContainer().getDirectMember(m.getName(), null, false);
+                if (abstraction.getType().isUnknown()) {
+                    abstraction.setType(m.getType());
+                }
+                else {
+                    abstraction.setType(unionType(m.getType(), 
+                            abstraction.getType(), that.getUnit()));
+                }
+            }*/
+        }
         for (Tree.ParameterList list: that.getParameterLists()) {
             for (Tree.Parameter tp: list.getParameters()) {
                 if (tp!=null) {
                     Parameter p = tp.getParameterModel();
                     if (p.getModel()!=null) {
-                        checkParameterVisibility(that, td, tp, p);
+                        checkParameterVisibility(that, m, tp, p);
                     }
                 }
             }
         }
-        inheritDefaultedArguments(td);
+        inheritDefaultedArguments(m);
     }
 
     @Override
