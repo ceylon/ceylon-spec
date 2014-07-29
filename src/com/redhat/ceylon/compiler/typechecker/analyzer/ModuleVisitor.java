@@ -7,10 +7,13 @@ import static com.redhat.ceylon.compiler.typechecker.tree.Util.name;
 import static java.util.Arrays.asList;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+
+import org.antlr.runtime.CommonToken;
 
 import com.redhat.ceylon.compiler.typechecker.model.Module;
 import com.redhat.ceylon.compiler.typechecker.model.ModuleImport;
@@ -18,6 +21,7 @@ import com.redhat.ceylon.compiler.typechecker.model.Package;
 import com.redhat.ceylon.compiler.typechecker.tree.Node;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree;
 import com.redhat.ceylon.compiler.typechecker.tree.Tree.ImportPath;
+import com.redhat.ceylon.compiler.typechecker.tree.Tree.QuotedLiteral;
 import com.redhat.ceylon.compiler.typechecker.tree.Visitor;
 
 /**
@@ -107,14 +111,25 @@ public class ModuleVisitor extends Visitor {
         if (phase==Phase.SRC_MODULE) {
             String version = getVersionString(that.getVersion());
             ImportPath importPath = that.getImportPath();
-            List<String> name = getNameAsList(importPath);
-            if (pkg.getNameAsString().isEmpty()) {
-                that.addError("module descriptor encountered in root source directory");
+            
+            boolean isDefaultModule = importPath == null;
+            List<String> name = isDefaultModule? 
+            		new ArrayList<String>() : getNameAsList(importPath);
+            
+            if (isDefaultModule) {
+            	importPath = new ImportPath(new CommonToken(6, Module.DEFAULT_MODULE_NAME));
+            	that.setImportPath(importPath);
+            	that.setVersion(new QuotedLiteral(new CommonToken(6, "unversioned")));
             }
-            else if (name.isEmpty()) {
+            		
+            if (pkg.getNameAsString().isEmpty()) {
+                name.add(Module.DEFAULT_MODULE_NAME);
+            }
+            
+            if (name.isEmpty()) {
                 that.addError("missing module name");
             }
-            else if (name.get(0).equals(Module.DEFAULT_MODULE_NAME)) {
+            else if (!isDefaultModule && name.get(0).equals(Module.DEFAULT_MODULE_NAME)) {
                 importPath.addError("reserved module name: default");
             }
             else if (name.size()==1 && name.get(0).equals("ceylon")) {
@@ -134,7 +149,8 @@ public class ModuleVisitor extends Visitor {
                     mainModule.setVersion(version);
                 }
                 String nameString = formatPath(importPath.getIdentifiers());
-				if ( !pkg.getNameAsString().equals(nameString) ) {
+				if ( (isDefaultModule && !(Module.DEFAULT_MODULE_NAME.equals(nameString) && "".equals(pkg.getNameAsString())))
+						|| (!isDefaultModule && !pkg.getNameAsString().equals(nameString)) ) {
                     importPath
                         .addError("module name does not match descriptor location: " + 
                         		nameString + " should be " + pkg.getNameAsString(), 
@@ -167,11 +183,22 @@ public class ModuleVisitor extends Visitor {
         super.visit(that);
         if (phase==Phase.REMAINING) {
             Tree.ImportPath importPath = that.getImportPath();
-            List<String> name = getNameAsList(importPath);
-            if (pkg.getNameAsString().isEmpty()) {
-                that.addError("package descriptor encountered in root source directory");
+            
+            boolean isDefaultPackage = importPath == null;
+            List<String> name = isDefaultPackage? 
+            		new ArrayList<String>() : getNameAsList(importPath);
+            		
+            if (isDefaultPackage) {
+            	importPath = new ImportPath(new CommonToken(6, ""));
+            	that.setImportPath(importPath);            	
             }
-            else if (name.isEmpty()) {
+
+            if (pkg.getNameAsString().isEmpty()) {
+            	pkg.setName(Arrays.asList(""));
+                name.add("");
+            }
+            
+            if (!isDefaultPackage && name.isEmpty()) {
                 that.addError("missing package name");
             }
             else if (name.get(0).equals(Module.DEFAULT_MODULE_NAME)) {
