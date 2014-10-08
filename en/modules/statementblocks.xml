@@ -2012,7 +2012,7 @@ else {
             <para>Two <literal>case</literal>s are said to be <emphasis>disjoint</emphasis> 
             if the intersection of their types is exactly <literal>Nothing</literal>, as
             defined by <xref linkend="disjointtypes"/>, or if they are both value cases with 
-            distinct literal values. In every <literal>switch</literal> statement, all 
+            distinct values. In every <literal>switch</literal> statement, all 
             <literal>case</literal>s must be mutually disjoint.</para>
             
             <para>A <literal>switch</literal> is <emphasis>exhaustive</emphasis> if there 
