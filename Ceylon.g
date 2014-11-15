@@ -2064,7 +2064,7 @@ ifExpression returns [IfExpression term]
       thenElseClauses
       { $term.setIfClause($thenElseClauses.ifClause);
         $term.setElseClause($thenElseClauses.elseClause);
-        if ($thenElseClauses.ifClause==null && $thenElseClauses.conditionList!=null) 
+        if ($thenElseClauses.ifClause==null)
             $term.setIfClause(new IfClause(null));
         $term.getIfClause().setConditionList($thenElseClauses.conditionList); }
     ;
