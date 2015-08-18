@@ -369,23 +369,6 @@
             
         </section>
         
-        <section id="docarchivenames">
-            <title>Documentation archive names</title>
-            
-            <para>A <emphasis>documentation archive name</emphasis> is of the following 
-            standard form:</para>
-            
-            <screen><emphasis>&lt;module&gt;</emphasis>-<emphasis>&lt;version&gt;</emphasis>.doc.zip</screen>
-            
-            <para>For example:</para>
-            
-            <screen>ceylon.language-1.0.1.doc.zip</screen>
-            <screen>org.hibernate-3.0.0.beta.doc.zip</screen>
-    
-            <para>The default module has no version, its documentation archive name is <literal>default.doc.zip</literal></para>
-            
-        </section>
-        
         <section id="modulearchives">
             <title>Module archives</title>
             
